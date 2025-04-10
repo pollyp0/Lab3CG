@@ -3,7 +3,7 @@
 #include "ScreenPass.h"
 #include "SceneTexturesConfig.h"
 
-// Подключаемые шейдеры из .usf
+
 #include "GlobalShader.h"
 #include "ShaderParameterStruct.h"
 
@@ -26,7 +26,6 @@ class FFullScreenPassPS : public FGlobalShader
 		SHADER_PARAMETER_STRUCT_REF(FViewUniformShaderParameters, View)
 		SHADER_PARAMETER_RDG_UNIFORM_BUFFER(FSceneTextureUniformParameters, SceneTexturesStruct)
 
-		// Параметры PandaFX
 		SHADER_PARAMETER(float, Contrast_R)
 		SHADER_PARAMETER(float, Contrast_G)
 		SHADER_PARAMETER(float, Contrast_B)
