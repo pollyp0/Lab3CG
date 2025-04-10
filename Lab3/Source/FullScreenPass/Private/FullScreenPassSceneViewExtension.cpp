@@ -5,7 +5,6 @@
 #include "PostProcess/PostProcessInputs.h"
 #include "DynamicResolutionState.h"
 
-// Главный переключатель эффекта
 static TAutoConsoleVariable<int32> CVarEnabled(
 	TEXT("r.FSP"),
 	1,
@@ -13,7 +12,6 @@ static TAutoConsoleVariable<int32> CVarEnabled(
 	TEXT(" 0: disabled\n")
 	TEXT(" 1: enabled (default)"));
 
-// Параметры PandaFX
 static TAutoConsoleVariable<float> CVarContrastR(TEXT("r.FSP.ContrastR"), 0.9f, TEXT("Contrast Red"));
 static TAutoConsoleVariable<float> CVarContrastG(TEXT("r.FSP.ContrastG"), 0.8f, TEXT("Contrast Green"));
 static TAutoConsoleVariable<float> CVarContrastB(TEXT("r.FSP.ContrastB"), 0.8f, TEXT("Contrast Blue"));
@@ -54,7 +52,7 @@ void FFullScreenPassSceneViewExtension::PrePostProcessPass_RenderThread(
 
 	const FScreenPassTextureViewport Viewport(SceneColor);
 
-	// Описание результирующего текстурного буфера
+	
 	FRDGTextureDesc SceneColorDesc = SceneColor.Texture->Desc;
 	SceneColorDesc.Format = PF_FloatRGBA;
 	SceneColorDesc.ClearValue = FClearValueBinding(FLinearColor(0.f, 0.f, 0.f, 0.f));
@@ -62,17 +60,13 @@ void FFullScreenPassSceneViewExtension::PrePostProcessPass_RenderThread(
 	FRDGTexture* ResultTexture = GraphBuilder.CreateTexture(SceneColorDesc, TEXT("FullScreenPassResult"));
 	FScreenPassRenderTarget ResultRenderTarget = FScreenPassRenderTarget(ResultTexture, SceneColor.ViewRect, ERenderTargetLoadAction::EClear);
 
-	// Загружаем шейдеры
 	FGlobalShaderMap* GlobalShaderMap = GetGlobalShaderMap(GMaxRHIFeatureLevel);
 	TShaderMapRef<FFullScreenPassVS> ScreenPassVS(GlobalShaderMap);
 	TShaderMapRef<FFullScreenPassPS> ScreenPassPS(GlobalShaderMap);
-
-	// Заполняем параметры для передачи в шейдер
 	FFullScreenPassPS::FParameters* Parameters = GraphBuilder.AllocParameters<FFullScreenPassPS::FParameters>();
 	Parameters->View = View.ViewUniformBuffer;
 	Parameters->SceneTexturesStruct = Inputs.SceneTextures;
 
-	// Подключаем значения из CVar переменных
 	Parameters->Contrast_R = CVarContrastR->GetFloat();
 	Parameters->Contrast_G = CVarContrastG->GetFloat();
 	Parameters->Contrast_B = CVarContrastB->GetFloat();
@@ -87,7 +81,6 @@ void FFullScreenPassSceneViewExtension::PrePostProcessPass_RenderThread(
 	Parameters->RenderTargets[0] = ResultRenderTarget.GetRenderTargetBinding();
 
 	
-	// Рисуем fullscreen pass
 	AddDrawScreenPass(
 		GraphBuilder,
 		RDG_EVENT_NAME("PandaFX FullScreenPass"),
@@ -99,6 +92,5 @@ void FFullScreenPassSceneViewExtension::PrePostProcessPass_RenderThread(
 		Parameters
 	);
 
-	// Копируем результат обратно в SceneColor
 	AddCopyTexturePass(GraphBuilder, ResultTexture, SceneColor.Texture);
 }
